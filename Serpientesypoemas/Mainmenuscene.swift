@@ -19,23 +19,34 @@ extension SKColor {
  
 class MainMenuScene: SKScene {
     override func didMove(to view: SKView) {
-        // Set the background color using RGB values
-        backgroundColor = SKColor(hex: 0x008c8d) // Replace with your desired Hex color
-        // Change the text on the "Start Game" button
-        let startGameButton = SKLabelNode(text: "Start Game")
-        startGameButton.fontSize = 60
+        // Add an image above the color background
+        let backgroundImage = SKSpriteNode(imageNamed: "Fondo") // Replace with your image file name
+        backgroundImage.setScale(1.0) // Keep the original size
+        backgroundImage.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
+        backgroundImage.zPosition = 1 // Place it above the color background
+        addChild(backgroundImage)
+        
+        // Change the text on the "Start Game" button with a border
+        let startGameButton = SKLabelNode()
+        let labelText = "Start Game"
+        let attributedText = NSMutableAttributedString(string: labelText, attributes: [
+            NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 60),
+            NSAttributedString.Key.foregroundColor: SKColor.white,
+            NSAttributedString.Key.strokeColor: SKColor.black, // Border color
+            NSAttributedString.Key.strokeWidth: -3.0 // Border width (negative for fill)
+        ])
+        startGameButton.attributedText = attributedText
         startGameButton.position = CGPoint(x: size.width / 2, y: size.height * 0.7)
-        startGameButton.fontName = UIFont.boldSystemFont(ofSize: 24).fontName
-        startGameButton.fontName = "Bubbly-Regular" // Replace with your custom font name
         startGameButton.name = "startGameButton"
+        startGameButton.zPosition = 2 // Place it above the image
         addChild(startGameButton)
     }
- 
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
             let nodesAtPoint = nodes(at: location)
- 
+            
             for node in nodesAtPoint {
                 if node.name == "startGameButton" {
                     // Change the scene class to match your game's initial scene
