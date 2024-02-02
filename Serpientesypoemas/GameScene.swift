@@ -18,6 +18,8 @@ class GameScene: SKScene {
     var isImageDisplayed = false
     var backgroundNode: SKSpriteNode?
     
+    var constructedPoem: [String] = []
+    
     let snakesAndLadders: [Int: Int] = [
         7: 23, // Ladder from space 7 to 23
         10: 27, // Ladder from space 10 to 27
@@ -77,149 +79,156 @@ class GameScene: SKScene {
     ]
     
     var speechSynthesizer = AVSpeechSynthesizer()
-    
-    override func didMove(to view: SKView) {
-        backgroundColor = SKColor(hex: 0x008c8d) // Replace with your desired Hex color
         
-        // Load and add your game board image
-        boardNode = SKSpriteNode(imageNamed: "BoardV1")
-        boardNode.position = CGPoint(x: size.width / 2, y: size.height * 0.7)
-        boardNode.setScale(min(size.width / boardNode.size.width, size.height / boardNode.size.height))
-        addChild(boardNode)
-        
-        // Example: Load your player image
-        playerNode = SKSpriteNode(imageNamed: "player_image")
-        playerNode.position = CGPoint(x: size.width * 0.95, y: size.height * 0.47)
-        playerNode.setScale(0.3) // Scale the player sprite as needed
-        addChild(playerNode)
-        
-        // Example: Load your dice image
-        diceNode = SKSpriteNode(imageNamed: "F1")
-        diceNode.position = CGPoint(x: size.width * 0.5, y: size.height * 0.25)
-        diceNode.setScale(0.5) // Scale the dice sprite as needed
-        addChild(diceNode)
-        
-        // Add a tap gesture to handle image removal
-        let tapGestureToCloseImage = UITapGestureRecognizer(target: self, action: #selector(handleImageTap(_:)))
-        view.addGestureRecognizer(tapGestureToCloseImage)
-
-        // Add a tap gesture to roll the dice
-        let tapGestureToRollDice = UITapGestureRecognizer(target: self, action: #selector(rollDice))
-        view.addGestureRecognizer(tapGestureToRollDice)
-    }
-
-    @objc func handleImageTap(_ sender: UITapGestureRecognizer) {
-        // If an image is displayed, remove it
-        if isImageDisplayed {
-            hideImage()
+        override func didMove(to view: SKView) {
+            backgroundColor = SKColor(hex: 0x008c8d) // Replace with your desired Hex color
+            
+            // Load and add your game board image
+            boardNode = SKSpriteNode(imageNamed: "BoardV1")
+            boardNode.position = CGPoint(x: size.width / 2, y: size.height * 0.7)
+            boardNode.setScale(min(size.width / boardNode.size.width, size.height / boardNode.size.height))
+            addChild(boardNode)
+            
+            // Example: Load your player image
+            playerNode = SKSpriteNode(imageNamed: "player_image")
+            playerNode.position = CGPoint(x: size.width * 0.95, y: size.height * 0.47)
+            playerNode.setScale(0.3) // Scale the player sprite as needed
+            addChild(playerNode)
+            
+            // Example: Load your dice image
+            diceNode = SKSpriteNode(imageNamed: "F1")
+            diceNode.position = CGPoint(x: size.width * 0.5, y: size.height * 0.25)
+            diceNode.setScale(0.5) // Scale the dice sprite as needed
+            addChild(diceNode)
+            
+            // Add a tap gesture to handle image removal
+            let tapGestureToCloseImage = UITapGestureRecognizer(target: self, action: #selector(handleImageTap(_:)))
+            view.addGestureRecognizer(tapGestureToCloseImage)
+            
+            // Add a tap gesture to roll the dice
+            let tapGestureToRollDice = UITapGestureRecognizer(target: self, action: #selector(rollDice))
+            view.addGestureRecognizer(tapGestureToRollDice)
         }
-    }
-
-    @objc func rollDice() {
-        if isRolling {
-            return
-        }
-        isRolling = true
         
-        // Simulate dice roll animation
-        var textures: [SKTexture] = []
-        var finalRollValue = 0 // Initialize the final roll value
-        
-        for _ in 1...10 {
-            let randomRoll = Int.random(in: 1...6)
-            textures.append(SKTexture(imageNamed: "F\(randomRoll)"))
-            finalRollValue = randomRoll // Store the last randomRoll value
-        }
-        let animation = SKAction.animate(with: textures, timePerFrame: 0.1)
-
-        diceNode.run(animation) {
-            self.isRolling = false
-
-            // Update the current space based on the dice roll
-            self.currentSpace += finalRollValue
-            print("Dice value: \(finalRollValue)")
-
-            // Check if the player has reached the end space (e.g., space 46)
-            if self.currentSpace >= 46 {
-                print("Game Over. Player reached the end!")
-                // You can present the final result scene here
-                // For example:
-                let finalResultScene = FinalResultScene(size: self.size)
-                self.view?.presentScene(finalResultScene)
-            } else {
-                print("Player is now on space \(self.currentSpace)")
-
-                // Add a delay before showing the image (for example, 2 seconds)
-                let showImageDelay = SKAction.wait(forDuration: 0.7)
-                let showImageAction = SKAction.run {
-                    // Display the game text based on the current space
-                    if let text = self.gameTexts.first(where: { $0.0 == self.currentSpace }) {
-                        print("Game Text: \(text.1)")
-
-                        // Show the associated image when a specific space is reached
-                        self.showImage(imageName: text.2)
-                    } else {
-                        // Hide the image when the player moves to another space
-                        self.hideImage()
-                    }
-                }
-
-                let sequence = SKAction.sequence([showImageDelay, showImageAction])
-                self.run(sequence)
+        @objc func handleImageTap(_ sender: UITapGestureRecognizer) {
+            // If an image is displayed, remove it
+            if isImageDisplayed {
+                hideImage()
             }
         }
-    }
-
-    func showImage(imageName: String) {
-        // Set isImageDisplayed to true
-        isImageDisplayed = true
-
-        // Add an initial delay before showing the image (for example, 2 seconds)
-        let initialDelayAction = SKAction.wait(forDuration: 0.7)
-
-        // Create a background node to overlay the entire scene
-        backgroundNode = SKSpriteNode(color: SKColor.black, size: size)
-        backgroundNode?.zPosition = 0.5
-        backgroundNode?.position = CGPoint(x: size.width / 2, y: size.height / 2)
-        addChild(backgroundNode!)
-
-        // Load and display the associated image
-        imageNode = SKSpriteNode(imageNamed: imageName)
-        let scale = min(size.width / imageNode!.size.width, size.height / imageNode!.size.height)
-        imageNode!.setScale(scale)
-        imageNode!.position = CGPoint(x: size.width / 2, y: size.height / 2)
-        imageNode!.zPosition = 1.0
-        addChild(imageNode!)
-
-        // Disable user interaction on the entire scene
-        view?.isUserInteractionEnabled = false
-
-        // Add a delay of 6 seconds before hiding the image and background
-        let displayDuration = 4.0
-        let delayAction = SKAction.wait(forDuration: displayDuration)
-        let hideAction = SKAction.run {
-            self.hideImage()
+        
+        @objc func rollDice() {
+            if isRolling {
+                return
+            }
+            isRolling = true
+            
+            // Simulate dice roll animation
+            var textures: [SKTexture] = []
+            var finalRollValue = 0 // Initialize the final roll value
+            
+            for _ in 1...10 {
+                let randomRoll = Int.random(in: 1...6)
+                textures.append(SKTexture(imageNamed: "F\(randomRoll)"))
+                finalRollValue = randomRoll // Store the last randomRoll value
+            }
+            let animation = SKAction.animate(with: textures, timePerFrame: 0.1)
+            
+            diceNode.run(animation) {
+                self.isRolling = false
+                
+                // Update the current space based on the dice roll
+                self.currentSpace += finalRollValue
+                print("Dice value: \(finalRollValue)")
+                
+                // Check if the player has reached the end space (e.g., space 46)
+                if self.currentSpace >= 46 {
+                    print("Game Over. Player reached the end!")
+                    // You can present the final result scene here
+                    // For example:
+                    let finalResultScene = FinalResultScene(size: self.size)
+                    self.view?.presentScene(finalResultScene)
+                } else {
+                    print("Player is now on space \(self.currentSpace)")
+                    
+                    // Extract the poem lines based on the current space
+                    if let text = self.gameTexts.first(where: { $0.0 == self.currentSpace }) {
+                        let poemLines = text.2
+                        // Add each poem line to the constructed poem
+                        // self.constructedPoem += poemLines
+                        
+                        // Add a delay before showing the image (for example, 2 seconds)
+                        let showImageDelay = SKAction.wait(forDuration: 0.7)
+                        let showImageAction = SKAction.run {
+                            // Display the game text based on the current space
+                            if let text = self.gameTexts.first(where: { $0.0 == self.currentSpace }) {
+                                print("Game Text: \(text.1)")
+                                
+                                // Show the associated image when a specific space is reached
+                                self.showImage(imageName: text.2)
+                            } else {
+                                // Hide the image when the player moves to another space
+                                self.hideImage()
+                            }
+                        }
+                        
+                        let sequence = SKAction.sequence([showImageDelay, showImageAction])
+                        self.run(sequence)
+                    }
+                }
+            }
         }
-
-        let sequence = SKAction.sequence([initialDelayAction, delayAction, hideAction])
-        run(sequence)
+        
+        func showImage(imageName: String) {
+            // Set isImageDisplayed to true
+            isImageDisplayed = true
+            
+            // Add an initial delay before showing the image (for example, 2 seconds)
+            let initialDelayAction = SKAction.wait(forDuration: 0.7)
+            
+            // Create a background node to overlay the entire scene
+            backgroundNode = SKSpriteNode(color: SKColor.black, size: size)
+            backgroundNode?.zPosition = 0.5
+            backgroundNode?.position = CGPoint(x: size.width / 2, y: size.height / 2)
+            addChild(backgroundNode!)
+            
+            // Load and display the associated image
+            imageNode = SKSpriteNode(imageNamed: imageName)
+            let scale = min(size.width / imageNode!.size.width, size.height / imageNode!.size.height)
+            imageNode!.setScale(scale)
+            imageNode!.position = CGPoint(x: size.width / 2, y: size.height / 2)
+            imageNode!.zPosition = 1.0
+            addChild(imageNode!)
+            
+            // Disable user interaction on the entire scene
+            self.view?.isUserInteractionEnabled = false
+            
+            // Add a delay of 6 seconds before hiding the image and background
+            let displayDuration = 4.0
+            let delayAction = SKAction.wait(forDuration: displayDuration)
+            let hideAction = SKAction.run {
+                self.hideImage()
+            }
+            
+            let sequence = SKAction.sequence([initialDelayAction, delayAction, hideAction])
+            run(sequence)
+        }
+        
+        func hideImage() {
+            // Remove the image and background nodes
+            imageNode?.removeFromParent()
+            imageNode = nil
+            
+            backgroundNode?.removeFromParent()
+            backgroundNode = nil
+            
+            // Reset isImageDisplayed to false
+            isImageDisplayed = false
+            
+            // Enable user interaction on the entire scene
+            self.view?.isUserInteractionEnabled = true
+            
+            // Reset the isRolling flag to false
+            isRolling = false
+        }
     }
-
-    func hideImage() {
-        // Remove the image and background nodes
-        imageNode?.removeFromParent()
-        imageNode = nil
-
-        backgroundNode?.removeFromParent()
-        backgroundNode = nil
-
-        // Reset isImageDisplayed to false
-        isImageDisplayed = false
-
-        // Enable user interaction on the entire scene
-        view?.isUserInteractionEnabled = true
-
-        // Reset the isRolling flag to false
-        isRolling = false
-    }
-}
