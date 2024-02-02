@@ -17,6 +17,7 @@ class GameScene: SKScene {
     var imageNode: SKSpriteNode?
     var isImageDisplayed = false
     var backgroundNode: SKSpriteNode?
+    var currentGamePoemLines: [String] = []
     
     let snakesAndLadders: [Int: Int] = [
         7: 23, // Ladder from space 7 to 23
@@ -144,7 +145,7 @@ class GameScene: SKScene {
                 print("Game Over. Player reached the end!")
                 // You can present the final result scene here
                 // For example:
-                let finalResultScene = FinalResultScene(size: self.size)
+                let finalResultScene = FinalResultScene(size: self.size, poemLines: self.currentGamePoemLines)
                 self.view?.presentScene(finalResultScene)
             } else {
                 print("Player is now on space \(self.currentSpace)")
@@ -196,16 +197,14 @@ class GameScene: SKScene {
 
         // Speak the associated text in Spanish with a slower rate
         if let text = gameTexts.first(where: { $0.0 == currentSpace }) {
-            let speechUtterance = AVSpeechUtterance(string: text.1)
-            
-            // Set the voice to a Spanish voice
+            let poemLines = text.1
+            currentGamePoemLines.append(poemLines)
+
+            let speechUtterance = AVSpeechUtterance(string: poemLines)
             speechUtterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
-            
-            // Set a slower rate (e.g., 0.4 for half the default speed)
-            speechUtterance.rate = 0.4
-            
+            speechUtterance.rate = 0.5
             speechSynthesizer.speak(speechUtterance)
-            print("Speaking: \(text.1)")
+            print("Speaking: \(poemLines)")
         } else {
             print("No associated text found for space \(currentSpace)")
         }
