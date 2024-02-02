@@ -194,9 +194,16 @@ class GameScene: SKScene {
         // Disable user interaction on the entire scene
         view?.isUserInteractionEnabled = false
 
-        // Speak the associated text
+        // Speak the associated text in Spanish with a slower rate
         if let text = gameTexts.first(where: { $0.0 == currentSpace }) {
             let speechUtterance = AVSpeechUtterance(string: text.1)
+            
+            // Set the voice to a Spanish voice
+            speechUtterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
+            
+            // Set a slower rate (e.g., 0.4 for half the default speed)
+            speechUtterance.rate = 0.4
+            
             speechSynthesizer.speak(speechUtterance)
             print("Speaking: \(text.1)")
         } else {
@@ -213,6 +220,7 @@ class GameScene: SKScene {
         let sequence = SKAction.sequence([initialDelayAction, delayAction, hideAction])
         run(sequence)
     }
+
 
     func hideImage() {
         // Remove the image and background nodes
