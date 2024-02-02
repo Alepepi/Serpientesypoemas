@@ -34,20 +34,24 @@ class FinalResultScene: SKScene {
         // Set the maximum width for each line
         let maxLineWidth: CGFloat = size.width * 0.9
 
-        // Display the stored poem lines
+        // Display the stored poem lines, skipping empty lines
+        var displayedLinesCount = 0
         for (index, line) in currentGamePoemLines.prefix(5).enumerated() {
-            let lineLabel = SKLabelNode(text: line)
-            lineLabel.fontSize = 20
-            lineLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.7 - CGFloat(index) * 30)
-            lineLabel.fontName = "Bubbly-Regular" // Replace with your custom font name
+            if !line.isEmpty {
+                let lineLabel = SKLabelNode(text: line)
+                lineLabel.fontSize = 20
+                lineLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.7 - CGFloat(displayedLinesCount) * 30)
+                lineLabel.fontName = "Bubbly-Regular" // Replace with your custom font name
 
-            // Limit the width of each line
-            if lineLabel.frame.width > maxLineWidth {
-                let scale = maxLineWidth / lineLabel.frame.width
-                lineLabel.setScale(scale)
+                // Limit the width of each line
+                if lineLabel.frame.width > maxLineWidth {
+                    let scale = maxLineWidth / lineLabel.frame.width
+                    lineLabel.setScale(scale)
+                }
+
+                addChild(lineLabel)
+                displayedLinesCount += 1
             }
-
-            addChild(lineLabel)
         }
 
         // Customize the buttons (unchanged)
